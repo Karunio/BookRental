@@ -5,6 +5,7 @@ using MetroFramework.Forms;
 using MetroFramework;
 using System.Data;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BookRental.SubItems
 {
@@ -58,18 +59,18 @@ namespace BookRental.SubItems
             InitializeComponent();
         }
 
-        private void DivMngForm_Load(object sender, EventArgs e)
+        private async void DivMngForm_Load(object sender, EventArgs e)
         {
-            RefreshGridData();
-            UpdateComboDivision();
+            await RefreshGridData();
+            await UpdateComboDivision();
             InitControls();
         }
 
-        private void UpdateComboDivision()
+        private async Task UpdateComboDivision()
         {
             using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 MySqlCommand command = new MySqlCommand()
                 {
@@ -77,12 +78,12 @@ namespace BookRental.SubItems
                     CommandText = comboQuery
                 };
 
-                MySqlDataReader reader = command.ExecuteReader();
+                MySqlDataReader reader = await Task.Run(() => command.ExecuteReader());
 
                 Dictionary<string, string> dic = new Dictionary<string, string>();
                 dic.Add("선택", "");
 
-                while (reader.Read())
+                while (await reader.ReadAsync())
                 {
                     dic.Add(reader[1].ToString(), reader[0].ToString());
                 }
@@ -93,15 +94,15 @@ namespace BookRental.SubItems
             }
         }
 
-        private void RefreshGridData()
+        private async Task RefreshGridData()
         {
             using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 MySqlDataAdapter dataAdapter = new MySqlDataAdapter(selectQuery, connection);
                 DataSet dataSet = new DataSet();
-                dataAdapter.Fill(dataSet, tableName);
+                await dataAdapter.FillAsync(dataSet, tableName);
 
                 GrdBooksTbl.DataSource = dataSet;
                 GrdBooksTbl.DataMember = tableName;
@@ -112,8 +113,6 @@ namespace BookRental.SubItems
 
         private void SetColumnHeaders()
         {
-            DataGridViewColumn column;
-
             SetColumnProperty(GrdBooksTbl.Columns["Idx"], 100, "번호");
             SetColumnProperty(GrdBooksTbl.Columns["Author"], 100, "저자");
             SetColumnProperty(GrdBooksTbl.Columns["Division"], 100, "구분코드");
@@ -130,7 +129,7 @@ namespace BookRental.SubItems
             column.HeaderText = text;
         }
 
-        private void BtnDelete_Click(object sender, EventArgs e)
+        private async void BtnDelete_Click(object sender, EventArgs e)
         {
             if (baseMode != BaseMode.UPDATE)
             {
@@ -139,7 +138,7 @@ namespace BookRental.SubItems
             }
 
             baseMode = BaseMode.DELETE;
-            DataProcess();
+            await DataProcess();
             InitControls();
         }
 
@@ -192,9 +191,9 @@ namespace BookRental.SubItems
             baseMode = BaseMode.INSERT;
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private async void BtnSave_Click(object sender, EventArgs e)
         {
-            DataProcess();
+            await DataProcess();
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)
@@ -270,7 +269,7 @@ namespace BookRental.SubItems
 
         }
 
-        private void DataProcess()
+        private async Task DataProcess()
         {
             if (string.IsNullOrEmpty(TxtAuthor.Text) ||
                 CboDivision.SelectedIndex <= 0 ||
@@ -305,7 +304,7 @@ namespace BookRental.SubItems
             {
                 using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     MySqlCommand command = new MySqlCommand()
                     {
@@ -353,7 +352,7 @@ namespace BookRental.SubItems
                         command.Parameters.Add(item);
                     }
 
-                    int result = command.ExecuteNonQuery();
+                    int result = await command.ExecuteNonQueryAsync();
 
                     string resultStr = string.Empty;
                     switch (baseMode)
@@ -378,7 +377,7 @@ namespace BookRental.SubItems
             }
             finally
             {
-                RefreshGridData();
+                await RefreshGridData();
             }
         }
 
