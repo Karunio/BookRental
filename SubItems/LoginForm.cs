@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using MetroFramework;
 using MetroFramework.Forms;
@@ -13,12 +14,12 @@ namespace BookRental.SubItems
             InitializeComponent();
         }
 
-        private void BtnOk_Click(object sender, EventArgs e)
+        private async void BtnOk_Click(object sender, EventArgs e)
         {
-            LoginProcess();
+            await LoginProcess();
         }
 
-        private void LoginProcess()
+        private async Task LoginProcess()
         {
             // ID, Password 빈칸일경우 재입력 요청
             if (string.IsNullOrEmpty(TxtUserId.Text) || string.IsNullOrEmpty(TxtUserPwd.Text))
@@ -36,7 +37,7 @@ namespace BookRental.SubItems
             {
                 using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
                     //MetroMessageBox.Show(this, "DB Connection OK.");
 
                     MySqlCommand command = new MySqlCommand() { Connection = connection };
@@ -53,8 +54,8 @@ namespace BookRental.SubItems
                     userPwd.Value = TxtUserPwd.Text.Trim();
                     command.Parameters.Add(userPwd);
 
-                    MySqlDataReader reader = command.ExecuteReader();
-                    reader.Read();
+                    MySqlDataReader reader = await Task.Run(() => command.ExecuteReader());
+                    await reader.ReadAsync();
                     string resultId = reader["userID"]?.ToString();
 
                     if (reader.HasRows == false || string.IsNullOrEmpty(resultId))
