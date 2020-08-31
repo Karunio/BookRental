@@ -5,6 +5,7 @@ using MetroFramework.Forms;
 using MetroFramework;
 using System.Data;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BookRental.SubItems
 {
@@ -19,25 +20,25 @@ namespace BookRental.SubItems
             InitializeComponent();
         }
 
-        private void DivMngForm_Load(object sender, EventArgs e)
+        private async void DivMngForm_Load(object sender, EventArgs e)
         {
-            RefreshGridData();
+            await RefreshGridData();
         }
 
-        private void RefreshGridData()
+        private async Task RefreshGridData()
         {
             using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
             {
                 string query = $@"SELECT Division, Names FROM {tableName}";
 
-                connection.Open();
+                await connection.OpenAsync();
 
                 MySqlCommand command = new MySqlCommand() { Connection = connection };
                 command.CommandText = query;
 
                 MySqlDataAdapter dataAdapter = new MySqlDataAdapter(query, connection);
                 DataSet dataSet = new DataSet();
-                dataAdapter.Fill(dataSet, tableName);
+                await dataAdapter.FillAsync(dataSet, tableName);
 
                 GrdDivTbl.DataSource = dataSet;
                 GrdDivTbl.DataMember = tableName;
@@ -158,7 +159,7 @@ namespace BookRental.SubItems
             baseMode = BaseMode.NONE;
         }
 
-        private void DataProcess()
+        private async Task DataProcess()
         {
             if (string.IsNullOrEmpty(TxtDivision.Text) ||
                 string.IsNullOrEmpty(TxtNames.Text))
@@ -199,7 +200,7 @@ namespace BookRental.SubItems
             {
                 using (MySqlConnection connection = new MySqlConnection(Commons.CONNSTR))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     MySqlCommand command = new MySqlCommand()
                     {
@@ -228,7 +229,7 @@ namespace BookRental.SubItems
                         command.Parameters.Add(item);
                     }
 
-                    int result = command.ExecuteNonQuery();
+                    int result = await command.ExecuteNonQueryAsync();
 
                     string resultStr = string.Empty;
                     switch (baseMode)
@@ -256,7 +257,7 @@ namespace BookRental.SubItems
             }
             finally
             {
-                RefreshGridData();
+                await RefreshGridData();
             }
         }
     }
