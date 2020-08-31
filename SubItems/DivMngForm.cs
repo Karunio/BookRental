@@ -122,9 +122,9 @@ namespace BookRental.SubItems
             baseMode = BaseMode.INSERT;
         }
 
-        private void BtnSave_Click(object sender, EventArgs e)
+        private async void BtnSave_Click(object sender, EventArgs e)
         {
-            DataProcess();
+            await DataProcess();
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)
